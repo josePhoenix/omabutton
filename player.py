@@ -97,7 +97,8 @@ class Player(multiprocessing.Process):
         self._vlc_event_manager = self.now_playing.event_manager()
         self._vlc_event_manager.event_attach(
             vlc.EventType.MediaPlayerEndReached,
-            self.next_media  # proceed to the next item upon finishing one
+            lambda x: self.next_media()
+            # proceed to the next item upon finishing one
         )
         self._media_list_position = 0
 
@@ -148,9 +149,8 @@ class Player(multiprocessing.Process):
             self.play()
 
     def play(self):
-        if not self.now_playing.is_playing():
-            self._say('Now playing: {}'.format(self._name))
-            self.now_playing.play()
+        self._say('Now playing: {}'.format(self._name))
+        self.now_playing.play()
 
     def pause(self):
         if self.now_playing.is_playing():
