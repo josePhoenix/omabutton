@@ -11,7 +11,7 @@ import logging
 
 LOG_FORMAT = "%(asctime)s %(module)s:%(lineno)d [%(levelname)s]: %(message)s"
 
-logging.basicConfig(format=LOG_FORMAT, level=logging.DEBUG)
+logging.basicConfig(format=LOG_FORMAT, level=logging.WARN)
 log = logging  # shorthand
 
 try:

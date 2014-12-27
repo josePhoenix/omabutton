@@ -6,6 +6,7 @@
     missingok
     notifempty
     create 664 root root
+    size 1M
 }
 
 /var/log/omabutton.err.log {
@@ -16,4 +17,5 @@
     missingok
     notifempty
     create 664 root root
+    size 1M
 }
