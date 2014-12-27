@@ -127,7 +127,7 @@ class Player(multiprocessing.Process):
             )
         else:
             # Fallback on filename parsing
-            filename = os.path.basename(normpath)
+            filename = os.path.basename(normpath).replace('.mp3', '')
             return re.sub(r'\d+\s*-?\s*', '', filename)
 
     def _begin_media(self, filepath, paused=False):
