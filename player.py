@@ -11,7 +11,8 @@ import logging
 
 LOG_FORMAT = "%(asctime)s %(module)s:%(lineno)d [%(levelname)s]: %(message)s"
 
-log = logging.basicConfig(format=LOG_FORMAT, level=logging.DEBUG)
+logging.basicConfig(format=LOG_FORMAT, level=logging.DEBUG)
+log = logging  # shorthand
 
 try:
     from RPi import GPIO
