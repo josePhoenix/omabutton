@@ -111,6 +111,10 @@ class Player(multiprocessing.Process):
             sys.exit(1)
         super(Player, self).__init__()
 
+    def _auto_advance(self, *args, **kwargs):
+        print '[_auto_advance] event from VLC: {} {}'.format(args, kwargs)
+        self.next_media()
+
     @staticmethod
     def _say(message):
         speech = SpeechRequest(message)
@@ -131,8 +135,10 @@ class Player(multiprocessing.Process):
             filename = os.path.basename(normpath).replace('.mp3', '')
             return re.sub(r'\d+\s*-?\s*', '', filename)
 
-    def _begin_media(self, filepath, paused=False):
+    def _begin_media(self, filepath, begin_as_paused=False):
         if self.now_playing.is_playing():
+            print ('[_begin_media] currently is_playing, stopping before '
+                   'switching media')
             self.now_playing.stop()
         normpath = os.path.abspath(filepath)
         print '[_begin_media] attempting to load', normpath
@@ -144,13 +150,18 @@ class Player(multiprocessing.Process):
                                                        libvlc_get_version()))
             sys.exit(1)
         self.now_playing.set_media(media)
+        print '[_begin_media] set_media succeeded'
         self._name = self._name_for_media(normpath)
-        if not paused:
+        if not begin_as_paused:
+            print '[_begin_media] begin_as_paused not set, playing'
             self.play()
 
     def play(self):
+        print '[play] announcing name: {}'.format(self._name)
         self._say('Now playing: {}'.format(self._name))
+        print '[play] begin playing...'
         self.now_playing.play()
+        print '[play] ...playing!'
 
     def pause(self):
         if self.now_playing.is_playing():
@@ -158,10 +169,10 @@ class Player(multiprocessing.Process):
 
     def playpause(self):
         if not self.now_playing.is_playing():
-            print '[playpause] not is_playing'
+            print '[playpause] currently not is_playing, play()'
             self.play()
         else:
-            print '[playpause] is_playing'
+            print '[playpause] currently is_playing, pause()'
             self.pause()
 
     def next_media(self):
@@ -186,7 +197,7 @@ class Player(multiprocessing.Process):
         # on first start, load the first media item in the list
         # and set it to paused
         self._media_list_position = 0
-        self._begin_media(self.media_files[0], paused=True)
+        self._begin_media(self.media_files[0], begin_as_paused=True)
 
     def dispatch(self, event):
         if self.now_playing is None:
