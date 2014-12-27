@@ -250,10 +250,11 @@ if __name__ == "__main__":
             'PLAYPAUSE': BUTTON_PLAYPAUSE,
             'NEXT': BUTTON_NEXT,
         })
-        buttons.initialize(callback=player.send_event)
     else:
         buttons = {}
     player = Player(MEDIA_ROOT, buttons)
+    if _ON_RASPI:
+        buttons.initialize(callback=player.send_event)
     player.start()
     while not _ON_RASPI:
         command = raw_input("---\nnext - n\nplaypause - .\nprevious - p\n> ")
