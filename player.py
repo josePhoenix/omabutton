@@ -94,7 +94,7 @@ class Player(multiprocessing.Process):
         self._media_root = media_root
         self._instance = vlc.Instance()
         self.now_playing = self._instance.media_player_new()
-        self._vlc_event_manager = player.event_manager()
+        self._vlc_event_manager = self.now_playing.event_manager()
         self._vlc_event_manager.event_attach(
             vlc.EventType.MediaPlayerEndReached,
             self.next  # proceed to the next item upon finishing one

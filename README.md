@@ -40,15 +40,15 @@ the GPIO pins are initialized with a pull-up or pull-down resistor in software
 
 Starting from a fresh Raspbian Wheezy image, a few things need to be set up:
 
-  #. `rpi-update` -- does firmware update help audio lag in flite? no but only analog out has this problem
-  #. reboot
-  #. install pulseaudio
   1. Install VLC -- `sudo apt-get install vlc`
-  2. Install the `player.py` script (and dependencies) somewhere
   3. Install `supervisor` -- `sudo apt-get install supervisor`
-  #. copy supervisor.cfg into place
+  2. Install the `player.py` script (and dependencies) somewhere
+         # mkdir /usr/local/omabutton
+         # cd /usr/local/omabutton
+         # git clone https://github.com/josePhoenix/omabutton.git
+         # ln -s /usr/local/omabutton/omabutton.conf /etc/supervisor/conf.d/omabutton.conf
+         # ln -s /usr/local/omabutton/omabutton_logrotate /etc/logrotate.d/omabutton
   #. install flite and any voices, verify it can speak
-  #. copy logrotate config into place
   5. (optional) Install `anacron` to ensure missed log rotations happen when
      the Pi notices. (This is good if you want a mostly unattended appliance
      without filling up limited SD card storage.)
@@ -61,7 +61,7 @@ Starting from a fresh Raspbian Wheezy image, a few things need to be set up:
   #. OR just install usbmount and be done with it
   7. Fill your USB drive with media and connect it
   8. Connect your speakers and button hardware
-  9. Start up the Raspberry Pi
+  9. Restart the Raspberry Pi
 
 ## Thanks
 
