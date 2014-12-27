@@ -41,7 +41,7 @@ class Buttons(object):
 
     def initialize(self, callback):
         GPIO.setmode(GPIO.BCM)
-        for channel in self._lookup.keys():
+        for channel in self._lookup.keys    ():
             GPIO.setup(channel, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
             GPIO.add_event_detect(
                 channel,
@@ -191,11 +191,7 @@ class Player(multiprocessing.Process):
         if self.now_playing is None:
             print '[dispatch] Not done initializing yet; ignore button press'
             return
-        if event == BUTTON_ESCAPE:
-            # cancel currently playing item
-            # go to first media item in the list
-            print '[dispatch] got BUTTON_ESCAPE'
-        elif event == BUTTON_NEXT:
+        if event == BUTTON_NEXT:
             # cancel currently playing item
             # begin playing next item, wrapping if necessary
             print '[dispatch] got BUTTON_NEXT'
