@@ -7,6 +7,11 @@ import time
 import os
 import glob
 import Queue as queue
+import logging
+
+LOG_FORMAT = "%(asctime)s %(module)s:%(lineno)d [%(levelname)s]: %(message)s"
+
+log = logging.basicConfig(format=LOG_FORMAT, level=logging.DEBUG)
 
 try:
     from RPi import GPIO
@@ -41,7 +46,7 @@ class Buttons(object):
 
     def initialize(self, callback):
         GPIO.setmode(GPIO.BCM)
-        for channel in self._lookup.keys    ():
+        for channel in self._lookup.keys():
             GPIO.setup(channel, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
             GPIO.add_event_detect(
                 channel,
@@ -107,12 +112,13 @@ class Player(multiprocessing.Process):
         self.media_files.sort()
 
         if not len(self.media_files) > 0:
-            print 'Cannot init player! No media found in', self._media_root
+            log.error('Cannot init player! No media '
+                     'found in {}'.format(self._media_root)
             sys.exit(1)
         super(Player, self).__init__()
 
     def _auto_advance(self, *args, **kwargs):
-        print '[_auto_advance] event from VLC: {} {}'.format(args, kwargs)
+        log.debug('[_auto_advance] event from VLC: {} {}'.format(args, kwargs))
         player.send_event(BUTTON_NEXT)
 
     @staticmethod
@@ -137,31 +143,31 @@ class Player(multiprocessing.Process):
 
     def _begin_media(self, filepath, begin_as_paused=False):
         if self.now_playing.is_playing():
-            print ('[_begin_media] currently is_playing, stopping before '
+            log.debug('[_begin_media] currently is_playing, stopping before '
                    'switching media')
             self.now_playing.stop()
         normpath = os.path.abspath(filepath)
-        print '[_begin_media] attempting to load', normpath
+        log.debug('[_begin_media] attempting to load {}'.format(normpath))
         try:
             media = self._instance.media_new(normpath)
         except NameError:
-            print('NameError: %s (%s vs LibVLC %s)' % (sys.exc_info()[1],
+            log.error('NameError: %s (%s vs LibVLC %s)' % (sys.exc_info()[1],
                                                        __version__,
                                                        libvlc_get_version()))
             sys.exit(1)
         self.now_playing.set_media(media)
-        print '[_begin_media] set_media succeeded'
+        log.debug('[_begin_media] set_media succeeded')
         self._name = self._name_for_media(normpath)
         if not begin_as_paused:
-            print '[_begin_media] begin_as_paused not set, playing'
+            log.debug('[_begin_media] begin_as_paused not set, playing')
             self.play()
 
     def play(self):
-        print '[play] announcing name: {}'.format(self._name)
+        log.debug('[play] announcing name: {}'.format(self._name))
         self._say('Now playing: {}'.format(self._name))
-        print '[play] begin playing...'
+        log.debug('[play] begin playing...')
         self.now_playing.play()
-        print '[play] ...playing!'
+        log.debug('[play] ...playing!')
 
     def pause(self):
         if self.now_playing.is_playing():
@@ -169,72 +175,85 @@ class Player(multiprocessing.Process):
 
     def playpause(self):
         if not self.now_playing.is_playing():
-            print '[playpause] currently not is_playing, play()'
+            log.debug('[playpause] currently not is_playing, play()')
             self.play()
         else:
-            print '[playpause] currently is_playing, pause()'
+            log.debug('[playpause] currently is_playing, pause()')
             self.pause()
 
     def next_media(self):
         self._media_list_position += 1
         if self._media_list_position >= len(self.media_files):
-            print '[next_media] wrap around, we reached the end'
+            log.debug('[next_media] wrap around, we reached the end')
             self._media_list_position = 0
         self._begin_media(self.media_files[self._media_list_position])
 
     def previous_media(self):
         self._media_list_position -= 1
         if self._media_list_position < 0:
-            print '[previous_media] wrap around, we reached the beginning'
+            log.debug('[previous_media] wrap around, we reached the beginning')
             self._media_list_position = len(self.media_files) - 1
         self._begin_media(self.media_files[self._media_list_position])
 
     def send_event(self, event_channel):
-        print '[send_event]', event_channel
+        log.debug('[send_event] {}'.format(event_channel))
         self.event_queue.put(event_channel)
 
     def initialize(self):
         # on first start, load the first media item in the list
         # and set it to paused
+        log.debug("[initialize] Queueing up first media item...")
         self._media_list_position = 0
         self._begin_media(self.media_files[0], begin_as_paused=True)
+        self._say("Ready to play!")
+        log.debug("[initialize] Ready to play!")
 
     def dispatch(self, event):
         if self.now_playing is None:
-            print '[dispatch] Not done initializing yet; ignore button press'
+            log.debug('[dispatch] Not done initializing yet; '
+                      'ignore button press')
             return
         if event == BUTTON_NEXT:
             # cancel currently playing item
             # begin playing next item, wrapping if necessary
-            print '[dispatch] got BUTTON_NEXT'
+            log.debug('[dispatch] got BUTTON_NEXT')
             self.next_media()
         elif event == BUTTON_PLAYPAUSE:
             # pause currently playing item
-            print '[dispatch] got BUTTON_PLAYPAUSE'
+            log.debug('[dispatch] got BUTTON_PLAYPAUSE')
             self.playpause()
         elif event == BUTTON_PREVIOUS:
             # cancel currently playing item
             # begin playing previous item, wrapping if necessary
-            print '[dispatch] got BUTTON_PREVIOUS'
+            log.debug('[dispatch] got BUTTON_PREVIOUS')
             self.previous_media()
         else:
-            print '[dispatch] What? Unknown button:', event
+            log.debug('[dispatch] What? Unknown button: {}'.format(event))
 
     def run(self):
         self.running = True
         self.initialize()
         while self.running:
             try:
-                print '[run] checking for event...'
+                log.debug('[run] checking for event...')
                 event = self.event_queue.get(block=True, timeout=1.0)
-                print '[run] got event', event
+                log.debug('[run] got event {} ({})', self.buttons[event], event)
                 self.dispatch(event)
             except queue.Empty:
                 pass # try again for another second
                      # (prevents waiting forever on quit for a blocking get())
 
 if __name__ == "__main__":
-    player = Player(MEDIA_ROOT)
+    if _ON_RASPI:
+        buttons = Buttons({
+            'PREVIOUS': BUTTON_PREVIOUS,
+            'PLAYPAUSE': BUTTON_PLAYPAUSE,
+            'NEXT': BUTTON_NEXT,
+        })
+        buttons.initialize(callback=player.send_event)
+    else:
+        buttons = {}
+    player = Player(MEDIA_ROOT, buttons)
     player.start()
     while not _ON_RASPI:
         command = raw_input("---\nnext - n\nplaypause - .\nprevious - p\n> ")
@@ -251,14 +270,5 @@ if __name__ == "__main__":
             player.send_event(BUTTON_PLAYPAUSE)
         else:
             print '???'
-    if _ON_RASPI:
-        buttons = Buttons({
-            'PREVIOUS': BUTTON_PREVIOUS,
-            'PLAYPAUSE': BUTTON_PLAYPAUSE,
-            'NEXT': BUTTON_NEXT,
-        })
-
-        buttons.initialize(callback=player.send_event)
-
     # run forever
     player.join()
