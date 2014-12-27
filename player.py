@@ -41,7 +41,7 @@ class Buttons(object):
 
     def initialize(self, callback):
         GPIO.setmode(GPIO.BCM)
-        for channel in self.channels():
+        for channel in self._lookup.keys():
             GPIO.setup(channel, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
             GPIO.add_event_detect(
                 channel,
