@@ -92,7 +92,8 @@ class SpeechRequest(object):
 
 class Player(multiprocessing.Process):
     media_files = []
-    def __init__(self, media_root):
+    def __init__(self, media_root, buttons):
+        self.buttons = buttons
         self.event_queue = multiprocessing.Queue()
 
         # VLC plumbing
