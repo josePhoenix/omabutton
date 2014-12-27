@@ -118,13 +118,14 @@ class Player(multiprocessing.Process):
 
     @staticmethod
     def _name_for_media(normpath):
-        try:
-            id3r = id3reader.Reader(normpath)
+        id3r = id3reader.Reader(normpath)
+        if id3r.getValue('title') is not None and \
+                id3r.getValue('performer') is not None:
             return '{0} from {1}'.format(
                 id3r.getValue('title'),
                 id3r.getValue('performer')
             )
-        except:
+        else:
             # Fallback on filename parsing
             filename = os.path.basename(normpath)
             return re.sub(r'\d+\s*-?\s*', '', filename)
