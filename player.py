@@ -97,7 +97,7 @@ class Player(multiprocessing.Process):
         self._vlc_event_manager = self.now_playing.event_manager()
         self._vlc_event_manager.event_attach(
             vlc.EventType.MediaPlayerEndReached,
-            lambda x: self.next_media()
+            self._auto_advance
             # proceed to the next item upon finishing one
         )
         self._media_list_position = 0
@@ -113,7 +113,7 @@ class Player(multiprocessing.Process):
 
     def _auto_advance(self, *args, **kwargs):
         print '[_auto_advance] event from VLC: {} {}'.format(args, kwargs)
-        self.next_media()
+        player.send_event(BUTTON_NEXT)
 
     @staticmethod
     def _say(message):
