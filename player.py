@@ -113,7 +113,7 @@ class Player(multiprocessing.Process):
 
         if not len(self.media_files) > 0:
             log.error('Cannot init player! No media '
-                     'found in {}'.format(self._media_root)
+                     'found in {}'.format(self._media_root))
             sys.exit(1)
         super(Player, self).__init__()
 
