@@ -191,8 +191,11 @@ class Player(multiprocessing.Process):
                       'play button to start from the beginning.')
             log.debug('[next_media] wrap around, we reached the end')
             self._media_list_position = 0
-        self._begin_media(self.media_files[self._media_list_position],
-                          begin_as_paused=True)
+            self._begin_media(self.media_files[self._media_list_position],
+                              begin_as_paused=True)
+        else:
+            self._begin_media(self.media_files[self._media_list_position],
+                              begin_as_paused=False)
 
     def previous_media(self):
         self._media_list_position -= 1
