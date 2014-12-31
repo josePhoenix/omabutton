@@ -110,7 +110,7 @@ class Player(multiprocessing.Process):
         self._media_list_position = 0
 
         self.running = False
-        self.media_files = glob.glob(os.path.join(self._media_root, '*.mp3'))
+        self.media_files = glob.glob(os.path.join(self._media_root, '*.[mM][pP]3'))
         self.media_files.sort()
 
         if not len(self.media_files) > 0:
