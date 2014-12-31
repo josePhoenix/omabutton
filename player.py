@@ -135,8 +135,8 @@ class Player(multiprocessing.Process):
         if id3r.getValue('title') is not None and \
                 id3r.getValue('performer') is not None:
             return '{0} from {1}'.format(
-                id3r.getValue('title'),
-                id3r.getValue('performer')
+                id3r.getValue('title').encode('ascii', 'ignore'),
+                id3r.getValue('performer').encode('ascii', 'ignore')
             )
         else:
             # Fallback on filename parsing
