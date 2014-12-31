@@ -186,13 +186,19 @@ class Player(multiprocessing.Process):
     def next_media(self):
         self._media_list_position += 1
         if self._media_list_position >= len(self.media_files):
+            self._say('That is the end of the material currently available. '
+                      'Have someone load some more for you, or press the green '
+                      'play button to start from the beginning.')
             log.debug('[next_media] wrap around, we reached the end')
             self._media_list_position = 0
-        self._begin_media(self.media_files[self._media_list_position])
+        self._begin_media(self.media_files[self._media_list_position],
+                          begin_as_paused=True)
 
     def previous_media(self):
         self._media_list_position -= 1
         if self._media_list_position < 0:
+            self._say('You have reached the beginning of the list. Now '
+                      'counting back from the last item on the list.')
             log.debug('[previous_media] wrap around, we reached the beginning')
             self._media_list_position = len(self.media_files) - 1
         self._begin_media(self.media_files[self._media_list_position])
@@ -207,7 +213,8 @@ class Player(multiprocessing.Process):
         log.debug("[initialize] Queueing up first media item...")
         self._media_list_position = 0
         self._begin_media(self.media_files[0], begin_as_paused=True)
-        self._say("Ready to play!")
+        self._say("There are {} pod cast recordings available. "
+                  "Ready to play!".format(len(self.media_files)))
         log.debug("[initialize] Ready to play!")
 
     def dispatch(self, event):
