@@ -43,11 +43,13 @@ Starting from a fresh Raspbian Wheezy image, a few things need to be set up:
   1. Install VLC -- `sudo apt-get install vlc`
   3. Install `supervisor` -- `sudo apt-get install supervisor`
   2. Install the `player.py` script (and dependencies) somewhere
+
          # mkdir /usr/local/omabutton
          # cd /usr/local/omabutton
          # git clone https://github.com/josePhoenix/omabutton.git
          # ln -s /usr/local/omabutton/omabutton.conf /etc/supervisor/conf.d/omabutton.conf
          # ln -s /usr/local/omabutton/omabutton_logrotate /etc/logrotate.d/omabutton
+
   #. install flite and any voices, verify it can speak
   5. (optional) Install `anacron` to ensure missed log rotations happen when
      the Pi notices. (This is good if you want a mostly unattended appliance
